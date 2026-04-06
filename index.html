@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0A0A0F">
+    <title>CryptoFortress - Mobile Cipher Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #5B52E8;
+            --secondary: #00FFCC;
+            --dark: #0A0A0F;
+            --darker: #050508;
+            --card: #1A1A2E;
+            --text: #FFFFFF;
+            --text-secondary: #8888FF;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Noto Sans', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Simplified background - no heavy particles for mobile */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(108, 99, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            padding-bottom: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Header - Mobile Optimized */
+        .custom-header {
+            background: linear-gradient(135deg, var(--card) 0%, var(--darker) 100%);
+            padding: 20px 16px;
+            box-shadow: 0 2px 10px rgba(108, 99, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Tab Navigation - Mobile Friendly (Horizontal Scroll) */
+        .tab-nav {
+            display: flex;
+            background: var(--card);
+            padding: 0;
+            margin: 15px;
+            border-radius: 15px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            gap: 2px;
+        }
+
+        .tab-btn {
+            flex: 0 0 auto;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            min-width: 100px;
+            /* Larger touch target for mobile */
+            touch-action: manipulation;
+        }
+
+        .tab-btn:active {
+            transform: scale(0.95);
+        }
+
+        .tab-btn.active {
+            color: var(--secondary);
+            background: linear-gradient(180deg, rgba(108, 99, 255, 0.2) 0%, transparent 100%);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards - Mobile Optimized */
+        .cipher-card {
+            background: linear-gradient(135deg, var(--card) 0%, #15152a 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(108, 99, 255, 0.2);
+        }
+
+        .cipher-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .cipher-title {
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .cipher-desc {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Input Fields - Larger for Mobile */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--secondary);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .neon-input {
+            width: 100%;
+            padding: 14px 15px;
+            background: var(--darker);
+            border: 2px solid var(--card);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 16px; /* Prevents zoom on mobile */
+            transition: all 0.2s ease;
+            font-family: 'Courier New', monospace;
+            /* Mobile optimization */
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .neon-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(108, 99, 255, 0.5);
+        }
+
+        /* Range Slider - Mobile Friendly */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            background: var(--secondary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--secondary);
+            /* Larger for mobile touch */
+        }
+
+        /* Buttons - Large Touch Targets */
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            /* Mobile optimization */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary), #00CC99);
+            color: var(--dark);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        /* Output Display */
+        .output-card {
+            background: linear-gradient(135deg, #0a0a15 0%, #0f0f1a 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--primary);
+            position: relative;
+        }
+
+        .output-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .output-text {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-wrap: break-word;
+            color: var(--secondary);
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Radio Group - Mobile Friendly */
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 16px;
+            background: var(--darker);
+            border-radius: 30px;
+            /* Mobile touch target */
+            touch-action: manipulation;
+        }
+
+        input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Key Inputs - Mobile Layout */
+        .key-inputs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-direction: row;
+        }
+
+        .key-input {
+            flex: 1;
+        }
+
+        /* Toast Notification - Mobile Friendly */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card);
+            color: var(--secondary);
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--secondary);
+            white-space: nowrap;
+            max-width: 90%;
+            white-space: normal;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--card);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .cipher-card {
+                padding: 15px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .key-inputs {
+                flex-direction: column;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .radio-label {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .tab-btn {
+                min-width: 90px;
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--secondary);
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Prevent body scroll when modal is open (if needed) */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Custom Header -->
+    <div class="custom-header">
+        <div class="header-title">🔐 CRYPTO FORTRESS</div>
+        <div class="header-subtitle" id="typing-text"></div>
+    </div>
+
+    <!-- Tab Navigation (Horizontal Scroll for Mobile) -->
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="reverse">🔄 REVERSE</button>
+        <button class="tab-btn" data-tab="atbash">🔤 ATBASH</button>
+        <button class="tab-btn" data-tab="caesar">⚙️ CAESAR</button>
+        <button class="tab-btn" data-tab="affine">📐 AFFINE</button>
+    </div>
+
+    <!-- Reverse Tab -->
+    <div id="reverse" class="tab-content active">
+        <div class="cipher-card">
+            <div class="cipher-icon">🔄</div>
+            <div class="cipher-title">Reverse Cipher</div>
+            <div class="cipher-desc">Reverse the entire string - Simple yet powerful</div>
+            
+            <div class="input-group">
+                <label class="input-label">Input Text</label>
+                <input type="text" id="reverse-input" class="neon-input" placeholder="Enter your secret message..." autocomplete="off">
+            </div>
+            
+            <button class="btn btn-primary" onclick="processReverse()">🔄 CONVERT</button>
+            
+            <div class="output-card">
+                <div class="output-label">OUTPUT</div>
+                <div id="reverse-output" class="output-text">Waiting for input...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Atbash Tab -->
+    <div id="atbash" class="tab-content">
+        <div class="cipher-card">
+            <div class="cipher-icon">🔤</div>
+            <div class="cipher-title">Atbash Cipher</div>
+            <div class="cipher-desc">A↔Z, B↔Y, C↔X... The mirror cipher</div>
+            
+            <div class="input-group">
+                <label class="input-label">Input Text</label>
+                <input type="text" id="atbash-input" class="neon-input" placeholder="Enter your secret message..." autocomplete="off">
+            </div>
+            
+            <button class="btn btn-primary" onclick="processAtbash()">🔄 CONVERT</button>
+            
+            <div class="output-card">
+                <div class="output-label">OUTPUT</div>
+                <div id="atbash-output" class="output-text">Waiting for input...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Caesar Tab -->
+    <div id="caesar" class="tab-content">
+        <div class="cipher-card">
+            <div class="cipher-icon">⚙️</div>
+            <div class="cipher-title">Caesar Cipher</div>
+            <div class="cipher-desc">Shift each letter by a fixed amount</div>
+            
+            <div class="input-group">
+                <label class="input-label">Input Text</label>
+                <input type="text" id="caesar-input" class="neon-input" placeholder="Enter your secret message..." autocomplete="off">
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Shift Amount: <span id="shift-value">3</span></label>
+                <div class="slider-container">
+                    <input type="range" id="caesar-shift" min="1" max="25" value="3" oninput="updateShiftValue(this.value)">
+                </div>
+            </div>
+            
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="caesar-mode" value="encrypt" checked> 🔒 ENCRYPT
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="caesar-mode" value="decrypt"> 🔓 DECRYPT
+                </label>
+            </div>
+            
+            <button class="btn btn-primary" onclick="processCaesar()">⚙️ EXECUTE</button>
+            
+            <div class="output-card">
+                <div class="output-label">OUTPUT</div>
+                <div id="caesar-output" class="output-text">Waiting for input...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Affine Tab -->
+    <div id="affine" class="tab-content">
+        <div class="cipher-card">
+            <div class="cipher-icon">📐</div>
+            <div class="cipher-title">Affine Cipher</div>
+            <div class="cipher-desc">Encryption: (ax + b) mod 26</div>
+            
+            <div class="input-group">
+                <label class="input-label">Input Text</label>
+                <input type="text" id="affine-input" class="neon-input" placeholder="Enter your secret message..." autocomplete="off">
+            </div>
+            
+            <div class="key-inputs">
+                <div class="key-input">
+                    <label class="input-label">Key a (1-25)</label>
+                    <input type="number" id="affine-a" class="neon-input" value="5" min="1" max="25" step="1">
+                </div>
+                <div class="key-input">
+                    <label class="input-label">Key b (0-25)</label>
+                    <input type="number" id="affine-b" class="neon-input" value="8" min="0" max="25" step="1">
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="processAffine('encrypt')">🔒 ENCRYPT</button>
+                <button class="btn btn-secondary" onclick="processAffine('decrypt')">🔓 DECRYPT</button>
+            </div>
+            
+            <div class="output-card">
+                <div class="output-label">OUTPUT</div>
+                <div id="affine-output" class="output-text">Waiting for input...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    // ================= TYPING ANIMATION (Lightweight) =================
+    const text = "Advanced Cryptographic Suite • Military Grade Protection";
+    let index = 0;
+    const typingElement = document.getElementById('typing-text');
+    
+    function typeAnimation() {
+        if (index < text.length) {
+            typingElement.innerHTML = text.substring(0, index + 1);
+            index++;
+            setTimeout(typeAnimation, 40);
+        }
+    }
+    
+    typeAnimation();
+    
+    // ================= TOAST NOTIFICATION =================
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.borderLeftColor = isError ? '#FF4466' : '#00FFCC';
+        toast.style.color = isError ? '#FF4466' : '#00FFCC';
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
+    }
+    
+    // ================= CIPHER FUNCTIONS =================
+    function reverseCipher(text) {
+        return text.split('').reverse().join('');
+    }
+    
+    function atbashCipher(text) {
+        let result = "";
+        for (let char of text.toUpperCase()) {
+            if (char >= 'A' && char <= 'Z') {
+                result += String.fromCharCode('Z'.charCodeAt(0) - (char.charCodeAt(0) - 'A'.charCodeAt(0)));
+            } else {
+                result += char;
+            }
+        }
+        return result;
+    }
+    
+    function caesarCipher(text, shift, mode = "encrypt") {
+        if (mode === "decrypt") shift = -shift;
+        let result = "";
+        for (let char of text.toUpperCase()) {
+            if (char >= 'A' && char <= 'Z') {
+                let code = ((char.charCodeAt(0) - 65 + shift) % 26 + 26) % 26;
+                result += String.fromCharCode(code + 65);
+            } else {
+                result += char;
+            }
+        }
+        return result;
+    }
+    
+    function modInverse(a, m) {
+        for (let x = 1; x < m; x++) {
+            if ((a * x) % m === 1) return x;
+        }
+        return null;
+    }
+    
+    function affineEncrypt(text, a, b) {
+        let result = "";
+        for (let char of text.toUpperCase()) {
+            if (char >= 'A' && char <= 'Z') {
+                let x = char.charCodeAt(0) - 65;
+                result += String.fromCharCode(((a * x + b) % 26) + 65);
+            } else {
+                result += char;
+            }
+        }
+        return result;
+    }
+    
+    function affineDecrypt(text, a, b) {
+        const aInv = modInverse(a, 26);
+        if (aInv === null) return "Invalid key 'a' (must be coprime with 26)";
+        
+        let result = "";
+        for (let char of text.toUpperCase()) {
+            if (char >= 'A' && char <= 'Z') {
+                let x = char.charCodeAt(0) - 65;
+                result += String.fromCharCode(((aInv * (x - b + 26)) % 26) + 65);
+            } else {
+                result += char;
+            }
+        }
+        return result;
+    }
+    
+    // ================= PROCESS FUNCTIONS =================
+    function processReverse() {
+        const input = document.getElementById('reverse-input').value;
+        if (!input) {
+            showToast('Please enter some text!', true);
+            return;
+        }
+        const result = reverseCipher(input);
+        document.getElementById('reverse-output').innerHTML = result;
+        showToast('✓ Reverse cipher applied successfully!');
+    }
+    
+    function processAtbash() {
+        const input = document.getElementById('atbash-input').value;
+        if (!input) {
+            showToast('Please enter some text!', true);
+            return;
+        }
+        const result = atbashCipher(input);
+        document.getElementById('atbash-output').innerHTML = result;
+        showToast('✓ Atbash cipher applied successfully!');
+    }
+    
+    function processCaesar() {
+        const input = document.getElementById('caesar-input').value;
+        if (!input) {
+            showToast('Please enter some text!', true);
+            return;
+        }
+        const shift = parseInt(document.getElementById('caesar-shift').value);
+        const mode = document.querySelector('input[name="caesar-mode"]:checked').value;
+        const result = caesarCipher(input, shift, mode);
+        document.getElementById('caesar-output').innerHTML = result;
+        showToast(`✓ Caesar cipher ${mode}ed successfully!`);
+    }
+    
+    function processAffine(mode) {
+        const input = document.getElementById('affine-input').value;
+        if (!input) {
+            showToast('Please enter some text!', true);
+            return;
+        }
+        const a = parseInt(document.getElementById('affine-a').value);
+        const b = parseInt(document.getElementById('affine-b').value);
+        
+        if (a < 1 || a > 25) {
+            showToast('Key "a" must be between 1 and 25!', true);
+            return;
+        }
+        
+        if (b < 0 || b > 25) {
+            showToast('Key "b" must be between 0 and 25!', true);
+            return;
+        }
+        
+        let result;
+        if (mode === 'encrypt') {
+            result = affineEncrypt(input, a, b);
+            showToast('✓ Affine encryption completed!');
+        } else {
+            result = affineDecrypt(input, a, b);
+            showToast('✓ Affine decryption completed!');
+        }
+        
+        document.getElementById('affine-output').innerHTML = result;
+    }
+    
+    function updateShiftValue(value) {
+        document.getElementById('shift-value').innerText = value;
+    }
+    
+    // ================= TAB SWITCHING =================
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            const tabId = tab.getAttribute('data-tab');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            tab.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+    
+    // ================= ENTER KEY SUPPORT =================
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputs = document.querySelectorAll('.neon-input');
+        inputs.forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const parent = input.closest('.tab-content');
+                    if (parent && parent.id === 'reverse') processReverse();
+                    else if (parent && parent.id === 'atbash') processAtbash();
+                    else if (parent && parent.id === 'caesar') processCaesar();
+                    else if (parent && parent.id === 'affine') {
+                        // Default to encrypt for affine
+                        processAffine('encrypt');
+                    }
+                }
+            });
+        });
+    });
+    
+    // Welcome message
+    setTimeout(() => {
+        showToast('🔐 Welcome to CryptoFortress Mobile!');
+    }, 500);
+</script>
+</body>
+</html>
